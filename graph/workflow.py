@@ -1,8 +1,3 @@
-"""
-Workflow Definition
-Defines the state machine, nodes, and edges using LangGraph.
-"""
-
 from langgraph.graph import StateGraph, END
 from graph.state import ResearchState
 from graph.nodes import planner_node, researcher_node, writer_node
@@ -24,6 +19,7 @@ def create_research_graph():
     workflow.add_conditional_edges(
         "planner",
         lambda state: "researcher" if state.get("tasks_pending") else "writer",
+        {"researcher": "researcher", "writer": "writer"},
     )
     workflow.add_edge("researcher", "planner")
     workflow.add_edge("writer", END)

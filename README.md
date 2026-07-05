@@ -63,3 +63,27 @@ research-agent/
      -H "Content-Type: application/json" \
      -d '{"query": "Room temperature superconductivity developments in 2026"}'
    ```
+
+## Walkthrough
+
+The graph-memory workflow can be exercised locally with mocks so you do not need live Redis or Qdrant services for the first pass.
+
+1. Run the focused test suite:
+   ```bash
+   venv/bin/pytest tests/test_graph_memory.py -q
+   ```
+2. Run the linter and formatter checks:
+   ```bash
+   venv/bin/ruff check .
+   venv/bin/ruff format --check .
+   ```
+3. For a manual smoke test, invoke the graph entry point with a simple query:
+   ```bash
+   venv/bin/python run_graph.py "Latest achievements in warm superconductors"
+   ```
+
+The tests cover:
+- Redis-backed short-term session persistence.
+- Qdrant-backed document storage and vector retrieval.
+- End-to-end routing through the planner, researcher, and writer nodes in the LangGraph workflow.
+

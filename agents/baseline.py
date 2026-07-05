@@ -3,7 +3,7 @@ import sys
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
-from langchain.agents import create_agent as create_react_agent
+from langchain.agents import create_agent
 
 # Add project root to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -57,7 +57,7 @@ system_prompt = (
 # Initialize LLM and Agent Executor using LangGraph
 openai_key = os.getenv("OPENAI_API_KEY") or "mock-key-for-import-validation"
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2, api_key=openai_key)
-agent_executor = create_react_agent(llm, tools=tools, prompt=system_prompt)
+agent_executor = create_agent(llm, tools=tools, system_prompt=system_prompt)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
