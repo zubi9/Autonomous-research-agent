@@ -4,7 +4,10 @@ An autonomous research system built with LangGraph, FastAPI, Redis, and Qdrant. 
 
 ## Architecture
 
-```mermaid
+
+![Autonomous Multi-agent research architecture](/assets/img/architecture.png "architecture diagram")
+
+<!-- ```mermaid
 graph TD
     User([User Query]) --> API[FastAPI API]
     API --> Graph[LangGraph State Machine]
@@ -28,7 +31,7 @@ graph TD
     end
 
     Writer --> Output[Synthesized Report]
-```
+``` -->
 
 ## Folder Structure
 
@@ -52,12 +55,25 @@ research-agent/
    cp .env.example .env
    ```
 
-2. Start the services using Docker Compose:
+2. Start the app locally before shipping a Docker build:
+   ```bash
+   chmod +x scripts/run-local.sh
+   ./scripts/run-local.sh
+   ```
+
+   Optional flags:
+   ```bash
+   ./scripts/run-local.sh --port 9000
+   ./scripts/run-local.sh --no-deps
+   ./scripts/run-local.sh --dry-run
+   ```
+
+3. Start the services using Docker Compose:
    ```bash
    docker compose -f deploy/docker-compose.yml up --build
    ```
 
-3. Trigger a research task:
+4. Trigger a research task:
    ```bash
    curl -X POST http://localhost:8000/api/v1/research \
      -H "Content-Type: application/json" \

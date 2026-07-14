@@ -4,9 +4,13 @@ from langchain_openai import ChatOpenAI
 
 class WriterAgent:
     def __init__(self):
-        openai_api_key = os.getenv("OPENAI_API_KEY") or "mock-key-for-import-validation"
+        openai_api_key = os.getenv("OPENAI_API_KEY")
         # Project plan specifies gpt-4o for writer and gpt-4o-mini for speed/cost elsewhere
-        self.llm = ChatOpenAI(model="gpt-4o", temperature=0.3, api_key=openai_api_key)
+        self.llm = None
+        if openai_api_key:
+            self.llm = ChatOpenAI(
+                model="gpt-4o", temperature=0.3, api_key=openai_api_key
+            )
 
     def synthesize_report(
         self, query: str, summaries: list[str], citations: list[dict]
@@ -50,9 +54,40 @@ class WriterAgent:
             f"Sources Available:\n{citations_context}"
         )
 
+        if self.llm is None:
+            return self._fallback_report(query, summaries, deduped_citations)
+
         try:
             response = self.llm.invoke([("system", system_msg), ("user", user_msg)])
             return response.content
         except Exception as e:
             print(f"Error in WriterAgent synthesis: {e}")
-            return f"# Failure to Synthesize Report\nAn error occurred while compiling the final report: {e}"
+            return self._fallback_report(query, summaries, deduped_citations)
+
+    def _fallback_report(
+        self, query: str, summaries: list[str], citations: list[dict]
+    ) -> str:
+        reference_lines = []
+        for idx, citation in enumerate(citations, start=1):
+            title = citation.get("title", "Untitled Source")
+            url = citation.get("url", "")
+            reference_lines.append(f"[{idx}] {title} - {url}")
+
+        references = (
+            "\n".join(reference_lines)
+            if reference_lines
+            else "No sources were collected."
+        )
+        summary_points = (
+            "\n".join(f"- {summary}" for summary in summaries)
+            if summaries
+            else "- No summary content was provided."
+        )
+
+        return (
+            f"# Research Report: {query}\n\n"
+            f"## Executive Summary\n"
+            f"This report was synthesized locally because no OpenAI API key was configured.\n\n"
+            f"## Detailed Findings\n{summary_points}\n\n"
+            f"## References\n{references}"
+        )

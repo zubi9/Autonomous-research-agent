@@ -7,10 +7,12 @@ from tools.web_fetch import WebFetchTool
 
 class ResearcherAgent:
     def __init__(self):
-        openai_api_key = os.getenv("OPENAI_API_KEY") or "mock-key-for-import-validation"
-        self.llm = ChatOpenAI(
-            model="gpt-4o-mini", temperature=0.2, api_key=openai_api_key
-        )
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        self.llm = None
+        if openai_api_key:
+            self.llm = ChatOpenAI(
+                model="gpt-4o-mini", temperature=0.2, api_key=openai_api_key
+            )
         self.web_search = TavilySearchTool()
         self.arxiv_fetch = ArxivFetchTool()
         self.web_fetch = WebFetchTool()
@@ -69,20 +71,43 @@ class ResearcherAgent:
         for idx, doc in enumerate(documents):
             context_str += f"Source [{idx + 1}]: {doc['title']} (URL: {doc['url']})\nContent Snippet:\n{doc['text']}\n\n"
 
-        system_msg = (
-            "You are a meticulous research analyst. Summarize the provided document context specifically in relation "
-            "to the research question. Be factual, concise, and structured. Use inline citation references like [Source 1], "
-            "matching the source index numbers provided in the context."
-        )
-        user_msg = f"Research Question: {sub_query}\n\nDocument Context:\n{context_str}"
-
-        try:
-            summary_response = self.llm.invoke(
-                [("system", system_msg), ("user", user_msg)]
+        if self.llm is None:
+            summary_text = self._fallback_summary(sub_query, documents)
+        else:
+            system_msg = (
+                "You are a meticulous research analyst. Summarize the provided document context specifically in relation "
+                "to the research question. Be factual, concise, and structured. Use inline citation references like [Source 1], "
+                "matching the source index numbers provided in the context."
             )
-            summary_text = summary_response.content
-        except Exception as e:
-            print(f"Error generating summary: {e}")
-            summary_text = f"Error generating summary for '{sub_query}'."
+            user_msg = (
+                f"Research Question: {sub_query}\n\nDocument Context:\n{context_str}"
+            )
+
+            try:
+                summary_response = self.llm.invoke(
+                    [("system", system_msg), ("user", user_msg)]
+                )
+                summary_text = summary_response.content
+            except Exception as e:
+                print(f"Error generating summary: {e}")
+                summary_text = self._fallback_summary(sub_query, documents)
 
         return {"summary": summary_text, "citations": citations, "documents": documents}
+
+    def _fallback_summary(self, sub_query: str, documents: list[dict]) -> str:
+        top_documents = documents[:3]
+        bullet_points = []
+        for idx, doc in enumerate(top_documents, start=1):
+            title = doc.get("title", f"Document {idx}")
+            snippet = (doc.get("text") or "").strip()
+            bullet_points.append(f"- {title}: {snippet[:220]}")
+
+        joined = (
+            "\n".join(bullet_points)
+            if bullet_points
+            else "No supporting documents were collected."
+        )
+        return (
+            f"Fallback summary for '{sub_query}':\n"
+            f"The available evidence suggests the topic is covered by the following sources:\n{joined}"
+        )
