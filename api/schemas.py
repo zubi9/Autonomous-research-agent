@@ -10,7 +10,9 @@ from typing import Optional, List
 class ResearchRequest(BaseModel):
     query: str = Field(
         ...,
-        example="What are the recent breakthroughs in room temperature superconductivity?",
+        json_schema_extra={
+            "example": "What are the recent breakthroughs in room temperature superconductivity?"
+        },
     )
     max_depth: Optional[int] = Field(default=3, description="Maximum sub-query depth")
     sources: Optional[List[str]] = Field(

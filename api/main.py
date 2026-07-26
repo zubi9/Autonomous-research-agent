@@ -1,10 +1,6 @@
-"""
-FastAPI Entry Point
-Initializes the API server, applies middleware, and includes endpoints.
-"""
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import make_asgi_app
 from api.routes import router as api_router
 
 app = FastAPI(
@@ -21,6 +17,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount Prometheus /metrics ASGI endpoint
+metrics_app = make_asgi_app()
+app.mount("/metrics", metrics_app)
 
 app.include_router(api_router, prefix="/api/v1")
 
