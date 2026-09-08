@@ -1,17 +1,30 @@
 import os
+
 from langchain_openai import ChatOpenAI
-from tools.web_search import TavilySearchTool
+
+try:
+    from langchain_google_genai import ChatGoogleGenerativeAI
+except ImportError:
+    ChatGoogleGenerativeAI = None
+
 from tools.arxiv_fetch import ArxivFetchTool
 from tools.web_fetch import WebFetchTool
+from tools.web_search import TavilySearchTool
 
 
 class ResearcherAgent:
     def __init__(self):
         openai_api_key = os.getenv("OPENAI_API_KEY")
+        gemini_api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+
         self.llm = None
         if openai_api_key:
             self.llm = ChatOpenAI(
                 model="gpt-4o-mini", temperature=0.2, api_key=openai_api_key
+            )
+        elif gemini_api_key and ChatGoogleGenerativeAI:
+            self.llm = ChatGoogleGenerativeAI(
+                model="gemini-2.0-flash", temperature=0.2, google_api_key=gemini_api_key
             )
         self.web_search = TavilySearchTool()
         self.arxiv_fetch = ArxivFetchTool()

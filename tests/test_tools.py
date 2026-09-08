@@ -3,17 +3,17 @@ Test Tools
 Unit tests for external API integrations (Tavily, ArXiv, Web scrapers).
 """
 
-import unittest
-from unittest.mock import MagicMock, patch
 import os
 import sys
+import unittest
+from unittest.mock import MagicMock, patch
 
 # Ensure root folder is in sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from tools.web_search import TavilySearchTool
 from tools.arxiv_fetch import ArxivFetchTool
 from tools.web_fetch import WebFetchTool
+from tools.web_search import TavilySearchTool
 
 
 class TestTools(unittest.TestCase):

@@ -1,7 +1,7 @@
-from graph.state import ResearchState
 from agents.planner import PlannerAgent
 from agents.researcher import ResearcherAgent
 from agents.writer import WriterAgent
+from graph.state import ResearchState
 
 
 def planner_node(state: ResearchState) -> dict:

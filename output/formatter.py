@@ -36,7 +36,7 @@ class ReportFormatter:
                 pdf.cell(0, 7, line_str[4:], new_x="LMARGIN", new_y="NEXT")
                 pdf.ln(1)
             # Render Bullets
-            elif line_str.startswith("- ") or line_str.startswith("* "):
+            elif line_str.startswith(("- ", "* ")):
                 pdf.set_font("Helvetica", size=11)
                 pdf.write(5, "  * ")
                 # Strip simple bold markup

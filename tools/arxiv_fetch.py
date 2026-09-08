@@ -3,11 +3,12 @@ ArXiv Fetch Tool
 Queries ArXiv API, downloads relevant research papers, and parses PDF content.
 """
 
+import io
 import urllib.parse
 import xml.etree.ElementTree as ET
-import requests
+
 import fitz  # PyMuPDF
-import io
+import requests
 
 
 class ArxivFetchTool:

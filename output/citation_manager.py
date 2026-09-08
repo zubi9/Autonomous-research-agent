@@ -1,4 +1,5 @@
 import urllib.parse
+
 import requests
 
 
@@ -32,17 +33,13 @@ class CitationManager:
 
             if "arxiv.org" in domain:
                 score = 0.95
-            elif domain.endswith(".edu") or domain.endswith(".gov"):
+            elif domain.endswith((".edu", ".gov")):
                 score = 0.90
             elif domain.endswith(".org"):
                 score = 0.80
-            elif (
-                domain.endswith(".com")
-                or domain.endswith(".net")
-                or domain.endswith(".co")
-            ):
+            elif domain.endswith((".com", ".net", ".co")):
                 score = 0.70
-        except Exception:
+        except ValueError:
             pass
 
         # 2. Liveliness Check (Head/GET Request with Timeout)
@@ -61,7 +58,7 @@ class CitationManager:
                 score += 0.05
             else:
                 score -= 0.30
-        except Exception:
+        except requests.RequestException:
             score -= 0.20
 
         return min(max(round(score, 2), 0.0), 1.0)

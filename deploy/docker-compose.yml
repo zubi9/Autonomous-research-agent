@@ -10,12 +10,21 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379/0
       - QDRANT_URL=http://qdrant:6333
-      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     depends_on:
-      - redis
-      - qdrant
-    volumes:
-      - ../:/app
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/" ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
@@ -23,6 +32,12 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
 
   qdrant:
     image: qdrant/qdrant:latest
@@ -31,6 +46,53 @@ services:
       - "6334:6334"
     volumes:
       - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
+      - ./grafana/dashboard_provision.yml:/etc/grafana/provisioning/dashboards/dashboard_provision.yml:ro
+      - ./grafana/dashboard.json:/etc/grafana/provisioning/dashboards/dashboard.json:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  streamlit:
+    build:
+      context: ..
+      dockerfile_inline: |
+        FROM python:3.12-slim
+        WORKDIR /app
+        COPY frontend/requirements.txt ./
+        RUN pip install --no-cache-dir -r requirements.txt
+        COPY frontend/ ./frontend/
+        EXPOSE 8501
+        ENV API_URL=http://api:8000
+        CMD ["streamlit", "run", "frontend/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   redis_data:

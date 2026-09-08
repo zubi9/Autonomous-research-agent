@@ -1,7 +1,8 @@
-import unittest
-from unittest.mock import patch, MagicMock
 import os
 import sys
+import unittest
+from unittest.mock import MagicMock, patch
+
 from fastapi.testclient import TestClient
 
 # Ensure root folder is in sys.path

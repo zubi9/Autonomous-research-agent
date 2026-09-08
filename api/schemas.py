@@ -4,7 +4,6 @@ Defines request and response schemas for FastAPI validation.
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional, List
 
 
 class ResearchRequest(BaseModel):
@@ -14,8 +13,8 @@ class ResearchRequest(BaseModel):
             "example": "What are the recent breakthroughs in room temperature superconductivity?"
         },
     )
-    max_depth: Optional[int] = Field(default=3, description="Maximum sub-query depth")
-    sources: Optional[List[str]] = Field(
+    max_depth: int | None = Field(default=3, description="Maximum sub-query depth")
+    sources: list[str] | None = Field(
         default=["web", "arxiv"], description="Sources to query"
     )
 
@@ -29,4 +28,4 @@ class StatusResponse(BaseModel):
     task_id: str
     status: str
     progress: float
-    error: Optional[str] = None
+    error: str | None = None

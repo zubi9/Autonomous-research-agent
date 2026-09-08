@@ -1,15 +1,27 @@
 import os
+
 from langchain_openai import ChatOpenAI
+
+try:
+    from langchain_google_genai import ChatGoogleGenerativeAI
+except ImportError:
+    ChatGoogleGenerativeAI = None
 
 
 class WriterAgent:
     def __init__(self):
         openai_api_key = os.getenv("OPENAI_API_KEY")
+        gemini_api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+
         # Project plan specifies gpt-4o for writer and gpt-4o-mini for speed/cost elsewhere
         self.llm = None
         if openai_api_key:
             self.llm = ChatOpenAI(
                 model="gpt-4o", temperature=0.3, api_key=openai_api_key
+            )
+        elif gemini_api_key and ChatGoogleGenerativeAI:
+            self.llm = ChatGoogleGenerativeAI(
+                model="gemini-2.5-pro", temperature=0.3, google_api_key=gemini_api_key
             )
 
     def synthesize_report(

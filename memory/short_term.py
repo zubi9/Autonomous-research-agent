@@ -1,6 +1,7 @@
 import json
-import redis
 import os
+
+import redis
 
 
 class ShortTermMemory:

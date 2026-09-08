@@ -3,15 +3,15 @@ Graph State Schema
 Defines the structure of the data passed along graph execution edges.
 """
 
-from typing import TypedDict, List, Dict, Any
+from typing import Any, TypedDict
 
 
 class ResearchState(TypedDict):
     query: str
-    plan: Dict[str, Any]
-    tasks_pending: List[Dict[str, Any]]
-    documents: List[Dict[str, Any]]
-    summaries: List[str]
-    citations: List[Dict[str, Any]]
+    plan: dict[str, Any]
+    tasks_pending: list[dict[str, Any]]
+    documents: list[dict[str, Any]]
+    summaries: list[str]
+    citations: list[dict[str, Any]]
     report: str
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]

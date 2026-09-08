@@ -1,16 +1,17 @@
 import os
 import sys
+
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-from langchain_core.tools import tool
 from langchain.agents import create_agent
+from langchain_core.tools import tool
+from langchain_openai import ChatOpenAI
 
 # Add project root to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from tools.web_search import TavilySearchTool
 from tools.arxiv_fetch import ArxivFetchTool
 from tools.web_fetch import WebFetchTool
+from tools.web_search import TavilySearchTool
 
 # Load local environment variables
 load_dotenv()

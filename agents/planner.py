@@ -1,7 +1,12 @@
 import os
-from pydantic import BaseModel, Field
-from typing import List
+
 from langchain_openai import ChatOpenAI
+from pydantic import BaseModel, Field
+
+try:
+    from langchain_google_genai import ChatGoogleGenerativeAI
+except ImportError:
+    ChatGoogleGenerativeAI = None
 
 
 class SubTask(BaseModel):
@@ -12,7 +17,7 @@ class SubTask(BaseModel):
 
 
 class ResearchPlan(BaseModel):
-    tasks: List[SubTask] = Field(
+    tasks: list[SubTask] = Field(
         description="Decomposed checklist of queries to cover."
     )
 
@@ -20,12 +25,19 @@ class ResearchPlan(BaseModel):
 class PlannerAgent:
     def __init__(self):
         openai_api_key = os.getenv("OPENAI_API_KEY")
+        gemini_api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+
         self.llm = None
         self.structured_llm = None
 
         if openai_api_key:
             self.llm = ChatOpenAI(
                 model="gpt-4o-mini", temperature=0.1, api_key=openai_api_key
+            )
+            self.structured_llm = self.llm.with_structured_output(ResearchPlan)
+        elif gemini_api_key and ChatGoogleGenerativeAI:
+            self.llm = ChatGoogleGenerativeAI(
+                model="gemini-2.0-flash", temperature=0.1, google_api_key=gemini_api_key
             )
             self.structured_llm = self.llm.with_structured_output(ResearchPlan)
 

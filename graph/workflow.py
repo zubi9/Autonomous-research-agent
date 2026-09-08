@@ -1,6 +1,7 @@
-from langgraph.graph import StateGraph, END
-from graph.state import ResearchState
+from langgraph.graph import END, StateGraph
+
 from graph.nodes import planner_node, researcher_node, writer_node
+from graph.state import ResearchState
 
 
 def create_research_graph():
